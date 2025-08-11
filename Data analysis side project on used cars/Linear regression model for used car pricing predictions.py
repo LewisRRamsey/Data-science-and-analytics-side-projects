@@ -17,7 +17,7 @@ def creating_csv():
 
 def creating_and_training_prediction_model():
     # creating and training linear regression model for predicting used car prices
-    model_df = pd.read_csv('mapped_vehicles.csv')
+    model_df = pd.read_csv("mapped_vehicles.csv")
     X = model_df[['year', 'condition', 'cylinders', 'manufacturer']]
     y = model_df['price']
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)

@@ -26,7 +26,7 @@ def creating_and_training_prediction_model():
     return used_car_price_model
 
 
-def manufacturer_to_value_conversion(manufacturer: str) -> int:
+def manufacturer_to_value_conversion():
     # maps manufacturer text to specified value for model based on average price of manufacturers vehicles
     manufacturer = str(input("Enter manufacturer name: "))
     manufacturer = manufacturer.lower()
@@ -40,9 +40,9 @@ def manufacturer_to_value_conversion(manufacturer: str) -> int:
         manufacturer_to_value_conversion()
     else:
         man_value = manufacturer_dict[manufacturer]
-        return man_value
+        return man_value, manufacturer
 
-def condition_to_value_conversion(condition: str) -> int:
+def condition_to_value_conversion():
     # maps condition text to speicified value for model based on average price of condition
     condition = str(input("Enter condition of vehicle (salvage, fair, good, excellent, like new or new): "))
     condition = condition.lower()
@@ -52,9 +52,9 @@ def condition_to_value_conversion(condition: str) -> int:
         condition_to_value_conversion()
     else:
         cond_value = condition_dict[condition]
-        return cond_value
+        return cond_value, condition
 
-def cylinder_to_value_conversion(cylinder: str) -> int:
+def cylinder_to_value_conversion():
     # maps cylinder count to specified value for model based on average price of condition
     cylinder = str(input("Enter number of cylinders in vehicle (try typing other if value incorrect):"))
     cylinder_dict = {'3': 3, '4': 2, '5': 1, 'other': 4, '10': 5, '6': 6, '12': 7, '8': 8}
@@ -63,7 +63,7 @@ def cylinder_to_value_conversion(cylinder: str) -> int:
         cylinder_to_value_conversion()
     else:
         cyl_value = cylinder_dict[cylinder]
-        return cyl_value
+        return cyl_value, cylinder
     
 def get_year_value() -> float:
     year = float(input("Enter year of vehicle (between 1900 and 2021): "))
@@ -80,6 +80,7 @@ def used_car_price_prediction(mapped_manufacturer: int, mapped_condition: int, m
         'cylinders': [mapped_cylinder],
         'manufacturer': [mapped_manufacturer]
     }
+    used_car_df = pd.DataFrame(used_car_df)
     used_car_data = used_car_df[['year', 'condition', 'cylinders', 'manufacturer']]
     price_predict = model.predict(used_car_data)
     return price_predict
@@ -87,34 +88,30 @@ def used_car_price_prediction(mapped_manufacturer: int, mapped_condition: int, m
 
 
 def model_main_function():
+    creating_csv()
     model = creating_and_training_prediction_model()
     while 1 == 1:
-        details_to_save = {
-        'year': [],
-        'condition': [],
-        'cylinders': [],
-        'manufacturer': [],
-        'predicted price': []
-        }
-        print("/n/n/n")
-        creating_csv()
         price_request = str(input("Would you like to predict a price for your car or view previous results: "))
         price_request = price_request.lower()
         if price_request == "yes":
-            mapped_manufacturer = manufacturer_to_value_conversion()
-            details_to_save['manufacturer'] = mapped_manufacturer
-            mapped_condition = condition_to_value_conversion()
-            details_to_save['condition'] = mapped_condition
-            mapped_cylinder = cylinder_to_value_conversion()
-            details_to_save['cylinders'] = mapped_cylinder
+            mapped_manufacturer, manufacturer = manufacturer_to_value_conversion()
+            mapped_condition, condition = condition_to_value_conversion()
+            mapped_cylinder, cylinder = cylinder_to_value_conversion()
             year = get_year_value()
-            details_to_save['year'] = year
             predicted_price = used_car_price_prediction(mapped_manufacturer, mapped_condition, mapped_cylinder, year, model)
-            details_to_save['predicted price'] = predicted_price
+            predicted_price = round(predicted_price[0], 0)
+            details_to_save = {
+                'year': [year],
+                'condition': [condition],
+                'cylinders': [cylinder],
+                'manufacturer': [manufacturer],
+                'predicted price': [predicted_price]
+                }
+            details_to_save = pd.DataFrame(details_to_save)
             print(f'predicted price for car is: £{predicted_price}')
             details_to_save.to_csv('saved_price_predictions.csv', mode = 'a')
         elif price_request == "no":
-            sys.exit()
+            os._exit(0)
         elif price_request == "view previous results":
             with open('saved_price_predictions.csv', mode='r') as file:
                 csv_reader = csv.reader(file)

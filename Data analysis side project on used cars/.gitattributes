@@ -1,1 +1,2 @@
 vehicles.csv filter=lfs diff=lfs merge=lfs -text
+mapped_vehicles.csv filter=lfs diff=lfs merge=lfs -text

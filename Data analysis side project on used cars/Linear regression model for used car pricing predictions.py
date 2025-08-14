@@ -7,6 +7,7 @@ import csv
 
 
 def creating_csv():
+    # if csv file for saving prices generated doesnt exist it is created
     file_path = "saved_price_predictions.csv"
     if os.path.exists(file_path):
         print("Save file exists")
@@ -66,6 +67,7 @@ def cylinder_to_value_conversion():
         return cyl_value, cylinder
     
 def get_year_value() -> float:
+    # retrieves year from mapped dataframe and checks for suitability
     year = float(input("Enter year of vehicle (between 1900 and 2021): "))
     if year < 1900 or year > 2021:
         print("Year value out of bounds for model")
@@ -74,6 +76,7 @@ def get_year_value() -> float:
         return year
 
 def used_car_price_prediction(mapped_manufacturer: int, mapped_condition: int, mapped_cylinder: int, year: int, model: LinearRegression):
+    # predicts price of used car using linear regression model
     used_car_df = {
         'year': [year],
         'condition': [mapped_condition],
@@ -88,8 +91,10 @@ def used_car_price_prediction(mapped_manufacturer: int, mapped_condition: int, m
 
 
 def model_main_function():
+    # creating csv file and linear regression model
     creating_csv()
     model = creating_and_training_prediction_model()
+    # while loop always running unitl program terminated
     while 1 == 1:
         price_request = str(input("Would you like to predict a price for your car or view previous results: "))
         price_request = price_request.lower()

@@ -16,15 +16,24 @@ def creating_csv():
             pass
 
 
-def creating_and_training_prediction_model():
+def creating_and_training_prediction_models():
     # creating and training linear regression model for predicting used car prices
     model_df = pd.read_csv("mapped_vehicles.csv")
-    X = model_df[['year', 'condition', 'cylinders', 'manufacturer']]
-    y = model_df['price']
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    used_car_price_model = LinearRegression()
-    used_car_price_model.fit(X_train, y_train)
-    return used_car_price_model
+    early_year_df = model_df[model_df['year'] < 2004]
+    late_year_df = model_df[model_df['year'] >= 2004]
+    # creating model for cars prior to 2004
+    early_X = early_year_df[['year', 'condition', 'cylinders', 'manufacturer']]
+    early_y = early_year_df['price']
+    early_X_train, early_X_test, early_y_train, early_y_test = train_test_split(early_X, early_y, test_size=0.2, random_state=42)
+    early_car_price_model = LinearRegression()
+    early_car_price_model.fit(early_X_train, early_y_train)
+    #creating model for cars from 2004 and after
+    late_X = late_year_df[['year', 'condition', 'cylinders', 'manufacturer', 'odometer']]
+    late_y = late_year_df['price']
+    late_X_train, late_X_test, late_y_train, late_y_test = train_test_split(late_X, late_y, test_size=0.2, random_state=42)
+    late_car_price_model = LinearRegression()
+    late_car_price_model.fit(late_X_train, late_y_train)
+    return early_car_price_model, late_car_price_model
 
 
 def manufacturer_to_value_conversion():
@@ -74,26 +83,48 @@ def get_year_value() -> float:
         get_year_value()
     else:
         return year
+    
+def get_odometer_value() -> float:
+    #retrieves odometer value from dataframe and checks suitability
+    odometer = float(input("Enter mileage of vehicle: "))
+    if odometer < 0:
+        print("Negative mileage not possible")
+        get_odometer_value()
+    else:
+        return odometer
 
-def used_car_price_prediction(mapped_manufacturer: int, mapped_condition: int, mapped_cylinder: int, year: int, model: LinearRegression):
+def early_car_price_prediction(mapped_manufacturer: int, mapped_condition: int, mapped_cylinder: int, year: int, model: LinearRegression):
     # predicts price of used car using linear regression model
     used_car_df = {
         'year': [year],
         'condition': [mapped_condition],
         'cylinders': [mapped_cylinder],
-        'manufacturer': [mapped_manufacturer]
+        'manufacturer': [mapped_manufacturer],
     }
     used_car_df = pd.DataFrame(used_car_df)
     used_car_data = used_car_df[['year', 'condition', 'cylinders', 'manufacturer']]
     price_predict = model.predict(used_car_data)
     return price_predict
 
+def late_car_price_prediction(mapped_manufacturer: int, mapped_condition: int, mapped_cylinder: int, year: int, odometer: float, model: LinearRegression):
+    # predicts price of used car using linear regression model
+    used_car_df = {
+        'year': [year],
+        'condition': [mapped_condition],
+        'cylinders': [mapped_cylinder],
+        'manufacturer': [mapped_manufacturer],
+        'odometer': [odometer]
+    }
+    used_car_df = pd.DataFrame(used_car_df)
+    used_car_data = used_car_df[['year', 'condition', 'cylinders', 'manufacturer', 'odometer']]
+    price_predict = model.predict(used_car_data)
+    return price_predict
 
 
 def model_main_function():
     # creating csv file and linear regression model
     creating_csv()
-    model = creating_and_training_prediction_model()
+    early_model, late_model = creating_and_training_prediction_models()
     # while loop always running unitl program terminated
     while 1 == 1:
         price_request = str(input("Would you like to predict a price for your car or view previous results: "))
@@ -103,7 +134,11 @@ def model_main_function():
             mapped_condition, condition = condition_to_value_conversion()
             mapped_cylinder, cylinder = cylinder_to_value_conversion()
             year = get_year_value()
-            predicted_price = used_car_price_prediction(mapped_manufacturer, mapped_condition, mapped_cylinder, year, model)
+            odometer = get_odometer_value()
+            if year >= 2004:
+                predicted_price = late_car_price_prediction(mapped_manufacturer, mapped_condition, mapped_cylinder, year, odometer, late_model)
+            else:
+                predicted_price = early_car_price_prediction(mapped_manufacturer, mapped_condition, mapped_cylinder, year, early_model)
             predicted_price = round(predicted_price[0], 0)
             details_to_save = {
                 'year': [year],

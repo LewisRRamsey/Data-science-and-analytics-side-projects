@@ -1,37 +1,3 @@
-# Round odometer to nearest 1000 for accuracy balance
-# Use year, condition, cylinder, manufacturer and odometer from mapped vehicles
-# Split into test and train split
-# Train model
-# Test model
-# Evaluate model
-
-from pymongo import MongoClient
-import pandas as pd
-
-# Accessing dataset from MongoBD
-
-def get_used_car_dataset():
-
-    client = MongoClient("mongodb://localhost:27017/") 
-    db = client["data"] 
-    collection = db["mapped-vehicles"] 
-
-    # Step 2: Retrieve data from MongoDB
-    used_car_data = list(collection.find())  # Convert the cursor to a list of documents
-
-    # Step 3: Convert to Pandas DataFrame
-    mapped_vehicles_df = pd.DataFrame(used_car_data)
-
-    # Step 4: Drop the MongoDB-specific '_id' field if not needed
-    if '_id' in mapped_vehicles_df.columns:
-        mapped_vehicles_df = mapped_vehicles_df.drop(columns=['_id'])
-
-    # Display the DataFrame
-    print(mapped_vehicles_df.head())
-
-get_used_car_dataset()
-
-
 def manufacturer_to_value_conversion():
     # maps manufacturer text to specified value for model based on average price of manufacturers vehicles
     manufacturer = str(input("Enter manufacturer name: "))
@@ -88,5 +54,3 @@ def get_odometer_value() -> float:
         get_odometer_value()
     else:
         return odometer
-    
-# 

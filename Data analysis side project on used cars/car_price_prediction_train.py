@@ -7,10 +7,14 @@
 
 from pymongo import MongoClient
 import pandas as pd
+import numpy as np
 
 import torch
 import torch.nn as nn
+import torch.optim as optim
 import torch.nn.functional as F
+
+from sklearn.model_selection import train_test_split
 
 # Accessing dataset from MongoBD
 
@@ -31,46 +35,24 @@ def get_used_car_dataset():
 
 
 # removing unnecessary data from used car dataframe, leaving price, mileage, condition, cylinders, manufacturer and year
-def decomposing_used_car_data(mapped_vehicles_df):
-    None
-
+def decomposing_used_car_data(mapped_vehicles_df: pd.DataFrame):
+    decomp_vehicles_df = mapped_vehicles_df[['price', 'year', 'manufacturer', 'condition', 'cylinders', 'odometer']]
+    return decomp_vehicles_df
 
 # splitting data randomly into test and training data using a 90/10 split
 def split_test_and_train_data(decomp_vehicles_df):
     None
-
-    
-class UsedCarPricePredictor(nn.Module):
-    
-    def __init__(self):
-        super(UsedCarPricePredictor, self).__init__()
-        self.input_layer = nn.Linear(5, 128)
-        self.hidden_layer1 = nn.Linear(128, 64)
-        self.hidden_layer2 = nn.Linear(64, 32)
-        self.hidden_layer3 = nn.Linear(32, 16)
-        self.output_layer = nn.Linear(16, 1)
-
-    def forward(self, data_input):
-        data = F.relu(self.input_layer(data_input))
-        data = F.relu(self.hidden_layer1(data))
-        data = F.relu(self.hidden_layer2(data))
-        data = F.relu(self.hidden_layer3(data))
-        output_data = F.relu(self.output_layer(data))
-        return output_data
-    
-    
-    
-
-# central function for training model and preparing data
-def train_used_car_model():
-
-    # preparing data
-
-    mapped_vehicles_df = get_used_car_dataset
-    
-
-train_used_car_model()
+    x = decomp_vehicles_df.drop(columns=['price']).values
+    y = decomp_vehicles_df['price'].values
+    y = y.reshape(-1, 1)
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.1, random_state=42)
+    return x_train, x_test, y_train, y_test
 
 
+# preparing data
+
+mapped_vehicles_df = get_used_car_dataset()
+decomp_vehicles_df = decomposing_used_car_data(mapped_vehicles_df)
+x_train, x_test, y_train, y_test = split_test_and_train_data(decomp_vehicles_df)
 
 

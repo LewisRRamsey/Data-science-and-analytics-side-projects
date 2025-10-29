@@ -43,22 +43,27 @@ def split_test_and_train_data(decomp_vehicles_df):
 def creating_decision_tree(info_train, price_train):
 
     # do further tweaks to model
-    dt_price_model = RandomForestRegressor(random_state=42, max_depth = 23)
+    dt_price_model = RandomForestRegressor(random_state=42, max_depth = 23, max_features = 'sqrt', bootstrap = False, n_estimators = 100)
     dt_price_model.fit(info_train, price_train)
     return dt_price_model
 
 
-def testing_decision_tree_model(dt_price_model, info_test, price_test):
-    price_pred = dt_price_model.predict(info_test)
+def testing_decision_tree_model(dt_price_model, info_test, info_train, price_test, price_train, mapped_vehicles_df):
+    price_pred_train = dt_price_model.predict(info_train)
+    price_pred_test = dt_price_model.predict(info_test)
+    train_mae = mean_absolute_error(price_train, price_pred_train)
+    test_mae = mean_absolute_error(price_test, price_pred_test)
 
-    mae = mean_absolute_error(price_test, price_pred)
-    mse = mean_squared_error(price_test, price_pred)
-    rmse = mse ** 0.5
-    r2 = r2_score(price_test, price_pred)
-    print(f"MAE: {mae}, RMSE: {rmse}, R²: {r2}")
+    prices = mapped_vehicles_df['price']
+    avg_price = np.mean(prices)
+    avg_error_percentage_train = f'{(train_mae / avg_price) * 100}%'
+    avg_error_percentage_test = f'{(test_mae / avg_price) * 100}%'
 
-    # plot table of measures and average rmse compared to average price
-
+    fig, ax = plt.subplots()
+    ax.axis('tight')
+    ax.axis('off')
+    table = ax.table(cellText = [[train_mae, avg_error_percentage_train], [test_mae, avg_error_percentage_test]], colLabels = ['MAE', 'Average Error Percentage'], rowLabels = ['Train data', 'Test Data'], loc = 'center')
+    plt.show()
 
 def main():
     # collecting_data
@@ -70,7 +75,6 @@ def main():
     dt_price_model = creating_decision_tree(info_train, price_train)
 
     # testing price prediction model
-    testing_decision_tree_model(dt_price_model, info_train, price_train)
-    testing_decision_tree_model(dt_price_model, info_test, price_test)
+    testing_decision_tree_model(dt_price_model, info_test, info_train, price_test, price_train, mapped_vehicles_df)
 
 main()

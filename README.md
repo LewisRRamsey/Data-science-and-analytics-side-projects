@@ -5,4 +5,4 @@ The cleaned and mapped dataset for the model contained 164988 entries.
 
 key figures for the data:
 
-![alt text](image.png)
+

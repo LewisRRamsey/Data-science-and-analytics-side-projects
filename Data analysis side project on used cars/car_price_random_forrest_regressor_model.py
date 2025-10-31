@@ -46,7 +46,7 @@ def split_test_and_train_data(decomp_vehicles_df):
 def creating_decision_tree(info_train, price_train):
 
     # creating random forest regressor model
-    
+
     dt_price_model = RandomForestRegressor(random_state=42, max_depth = 23, max_features = 'sqrt', bootstrap = False, n_estimators = 100)
     dt_price_model.fit(info_train, price_train)
     return dt_price_model
@@ -73,7 +73,7 @@ def testing_decision_tree_model(dt_price_model, info_test, info_train, price_tes
     fig, ax = plt.subplots()
     ax.axis('tight')
     ax.axis('off')
-    table = ax.table(cellText = [[train_mae, avg_error_percentage_train], [test_mae, avg_error_percentage_test]], colLabels = ['MAE', 'Average Error Percentage'], rowLabels = ['Train data', 'Test Data'], loc = 'center')
+    table = ax.table(cellText = [[train_mae, avg_error_percentage_train], [test_mae, avg_error_percentage_test]], colLabels = ['MAE (£)', 'Average Error Percentage'], rowLabels = ['Train data', 'Test Data'], loc = 'center')
     plt.show()
 
 def main():
